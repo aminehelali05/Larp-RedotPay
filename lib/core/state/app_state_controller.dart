@@ -20,13 +20,13 @@ class AppStateController extends StateNotifier<DemoAppState> {
   static const DemoAppState _initialState = DemoAppState(
     totalBalance: 3.39,
     assets: [
-      AssetBalance(symbol: 'USDT', name: 'TetherUS', amount: 3.00, usdRate: 1.0, icon: '🟦'),
-      AssetBalance(symbol: 'USDⓢ', name: 'USDⓢ', amount: 0.39, usdRate: 1.0, icon: '🟢'),
-      AssetBalance(symbol: 'USDC', name: 'USDC', amount: 0.00, usdRate: 1.0, icon: '🔵'),
-      AssetBalance(symbol: 'BTC', name: 'Bitcoin', amount: 0.00, usdRate: 69650, icon: '🟠'),
-      AssetBalance(symbol: 'ETH', name: 'Ethereum', amount: 0.00, usdRate: 3550, icon: '🟣'),
-      AssetBalance(symbol: 'SOL', name: 'Solana', amount: 0.00, usdRate: 170, icon: '🟪'),
-      AssetBalance(symbol: 'BNB', name: 'BNB', amount: 0.00, usdRate: 590, icon: '🟡'),
+      AssetBalance(symbol: 'USDT', name: 'TetherUS', amount: 3.00, usdRate: 1.0, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdt.png'),
+      AssetBalance(symbol: 'USDⓢ', name: 'USDⓢ', amount: 0.39, usdRate: 1.0, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdc.png'),
+      AssetBalance(symbol: 'USDC', name: 'USDC', amount: 0.00, usdRate: 1.0, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdc.png'),
+      AssetBalance(symbol: 'BTC', name: 'Bitcoin', amount: 0.00, usdRate: 69650, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png'),
+      AssetBalance(symbol: 'ETH', name: 'Ethereum', amount: 0.00, usdRate: 3550, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png'),
+      AssetBalance(symbol: 'SOL', name: 'Solana', amount: 0.00, usdRate: 170, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/sol.png'),
+      AssetBalance(symbol: 'BNB', name: 'BNB', amount: 0.00, usdRate: 590, icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/bnb.png'),
     ],
     transactions: [
       TransactionItem(

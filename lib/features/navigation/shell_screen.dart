@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_theme.dart';
 import '../assets/assets_screen.dart';
 import '../card/card_screen.dart';
 import '../home/home_screen.dart';
@@ -24,54 +25,70 @@ class _ShellScreenState extends State<ShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      body: IndexedStack(index: _index, children: _tabs),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(34),
-            border: Border.all(color: const Color(0xFF5B5D66), width: 1.2),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_filled,
-                label: 'Home',
-                selected: _index == 0,
-                onTap: () => setState(() => _index = 0),
-                color: colorScheme.primary,
-              ),
-              _NavItem(
-                icon: Icons.credit_card,
-                label: 'Card',
-                selected: _index == 1,
-                onTap: () => setState(() => _index = 1),
-                color: colorScheme.primary,
-              ),
-              _NavItem(
-                icon: Icons.arrow_right_alt_rounded,
-                label: 'Send',
-                selected: _index == 2,
-                onTap: () => setState(() => _index = 2),
-                color: colorScheme.primary,
-              ),
-              _NavItem(
-                icon: Icons.account_balance_wallet,
-                label: 'Assets',
-                selected: _index == 3,
-                onTap: () => setState(() => _index = 3),
-                color: colorScheme.primary,
-              ),
-            ],
-          ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: KeyedSubtree(
+          key: ValueKey(_index),
+          child: _tabs[_index],
+        ),
+      ),
+      bottomNavigationBar: _BottomNav(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+      ),
+    );
+  }
+}
+
+class _BottomNav extends StatelessWidget {
+  const _BottomNav({required this.currentIndex, required this.onTap});
+
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  static const _items = [
+    _NavDef(Icons.home_rounded, 'Home'),
+    _NavDef(Icons.credit_card_rounded, 'Card'),
+    _NavDef(Icons.arrow_forward_rounded, 'Send'),
+    _NavDef(Icons.account_balance_wallet_rounded, 'Assets'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: Container(
+        height: 68,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0E),
+          borderRadius: BorderRadius.circular(34),
+          border: Border.all(color: const Color(0xFF2A2D36), width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(_items.length, (i) {
+            final item = _items[i];
+            final selected = currentIndex == i;
+            return _NavItem(
+              icon: item.icon,
+              label: item.label,
+              selected: selected,
+              onTap: () => onTap(i),
+            );
+          }),
         ),
       ),
     );
   }
+}
+
+class _NavDef {
+  final IconData icon;
+  final String label;
+  const _NavDef(this.icon, this.label);
 }
 
 class _NavItem extends StatelessWidget {
@@ -80,39 +97,39 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    required this.color,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
+    final color = selected ? AppColors.brandRed : Colors.white70;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF1B1D23) : Colors.transparent,
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 23, color: selected ? color : Colors.white),
+            Icon(icon, size: 22, color: color),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: selected ? color : Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
               ),
             ),
           ],

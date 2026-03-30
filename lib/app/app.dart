@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/state/app_state_controller.dart';
 import '../features/navigation/shell_screen.dart';
+import '../features/splash/splash_screen.dart';
 import 'theme/app_theme.dart';
 
-class RedotPayDemoApp extends ConsumerWidget {
+class RedotPayDemoApp extends StatelessWidget {
   const RedotPayDemoApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appState = ref.watch(appStateProvider);
-
+  Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'RedotPay Demo',
+      title: 'RedotPay',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
-      themeMode: appState.themeMode,
-      home: const ShellScreen(),
+      themeMode: ThemeMode.dark,
+      home: SplashScreen(nextScreen: const ShellScreen()),
     );
   }
 }

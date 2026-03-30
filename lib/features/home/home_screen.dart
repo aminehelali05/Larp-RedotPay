@@ -2,147 +2,328 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../app/theme/app_theme.dart';
 import '../../core/state/app_state_controller.dart';
+import '../../core/widgets/scale_button.dart';
 import '../profile/profile_settings_screen.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _balanceVisible = true;
+
+  @override
+  Widget build(BuildContext context) {
     final appState = ref.watch(appStateProvider);
-    final controller = ref.read(appStateProvider.notifier);
     final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(18, 12, 18, 130),
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ProfileSettingsScreen()),
-                    );
-                  },
-                  child: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFF2A2D36),
-                    child: Icon(Icons.person, color: Colors.white60),
-                  ),
-                ),
-                const Spacer(),
-                Text('RedotPay', style: textTheme.titleLarge),
-                const Spacer(),
-                const Icon(Icons.qr_code_scanner_rounded, size: 23),
-                const SizedBox(width: 14),
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: const [
-                    Icon(Icons.notifications_none_rounded, size: 24),
-                    Positioned(
-                      right: 0,
-                      top: -1,
-                      child: CircleAvatar(radius: 4.5, backgroundColor: Color(0xFFFA2E57)),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                const Icon(Icons.headset_mic_outlined, size: 23),
-              ],
-            ),
+            // ─── Header ───
+            _buildHeader(context, textTheme),
             const SizedBox(height: 26),
-            Row(
-              children: [
-                Text('Est. total value', style: textTheme.bodySmall),
-                const SizedBox(width: 4),
-                const Icon(Icons.keyboard_arrow_down, color: Color(0xFF8D8E96), size: 19),
-                const SizedBox(width: 12),
-                const Icon(Icons.remove_red_eye_outlined, color: Color(0xFF8D8E96), size: 20),
-              ],
-            ),
-            const SizedBox(height: 9),
-            GestureDetector(
-              onDoubleTap: () => _editBalanceDialog(context, controller, appState.totalBalance),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    NumberFormat('#,##0.00').format(appState.totalBalance),
-                    style: textTheme.headlineLarge,
-                  ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Text('USD', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
-                        const Icon(Icons.arrow_drop_down, size: 24),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _QuickAction(label: 'Deposit', icon: Icons.add, selected: true),
-                _QuickAction(label: 'Buy Crypto', icon: Icons.bolt_outlined),
-                _QuickAction(label: 'Swap', icon: Icons.swap_horiz),
-                _QuickAction(label: 'More', icon: Icons.more_horiz),
-              ],
-            ),
+
+            // ─── Balance Section ───
+            _buildBalanceSection(appState.totalBalance, textTheme),
             const SizedBox(height: 24),
-            _InviteCard(textTheme: textTheme),
+
+            // ─── Quick Actions ───
+            const _QuickActionsRow(),
+            const SizedBox(height: 24),
+
+            // ─── Invite Card ───
+            _buildInviteCard(textTheme),
             const SizedBox(height: 16),
-            _CreditCardMock(textTheme: textTheme),
+
+            // ─── Credit Card ───
+            _buildCreditCard(textTheme),
             const SizedBox(height: 16),
-            _TransactionPreview(textTheme: textTheme),
+
+            // ─── Transactions ───
+            _TransactionsSection(textTheme: textTheme),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _editBalanceDialog(
-    BuildContext context,
-    AppStateController controller,
-    double current,
-  ) async {
-    final textCtrl = TextEditingController(text: current.toStringAsFixed(2));
-
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Edit total balance'),
-          content: TextField(
-            controller: textCtrl,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(prefixText: '\$ '),
+  // ─────────────────── HEADER ───────────────────
+  Widget _buildHeader(BuildContext context, TextTheme textTheme) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProfileSettingsScreen()),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(
-              onPressed: () async {
-                final parsed = double.tryParse(textCtrl.text.trim().replaceAll(',', ''));
-                if (parsed != null) {
-                  await controller.setTotalBalance(parsed);
-                }
-                if (ctx.mounted) {
-                  Navigator.pop(ctx);
-                }
-              },
-              child: const Text('Apply'),
+          child: const CircleAvatar(
+            radius: 18,
+            backgroundColor: Color(0xFF2A2D36),
+            child: Icon(Icons.person, color: Colors.white54, size: 22),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          'RedotPay',
+          style: textTheme.titleLarge?.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const Spacer(),
+        _headerIcon(Icons.qr_code_scanner_rounded, 'QR Scanner'),
+        const SizedBox(width: 16),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _headerIcon(Icons.notifications_none_rounded, 'Notifications'),
+            Positioned(
+              right: 0,
+              top: -1,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.brandRed,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
           ],
-        );
-      },
+        ),
+        const SizedBox(width: 16),
+        _headerIcon(Icons.headset_mic_outlined, 'Support'),
+      ],
+    );
+  }
+
+  Widget _headerIcon(IconData icon, String tooltip) {
+    return ScaleButton(
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$tooltip coming soon!')),
+      ),
+      child: Icon(icon, size: 22, color: Colors.white),
+    );
+  }
+
+  // ─────────────────── BALANCE ───────────────────
+  Widget _buildBalanceSection(double balance, TextTheme textTheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Est. total value',
+              style: textTheme.bodySmall?.copyWith(fontSize: 13),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_down,
+                color: AppColors.textMuted, size: 18),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => setState(() => _balanceVisible = !_balanceVisible),
+              child: Icon(
+                _balanceVisible
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: AppColors.textMuted,
+                size: 18,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            _balanceVisible
+                ? TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: balance),
+                    duration: const Duration(milliseconds: 1200),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, val, __) {
+                      return Text(
+                        NumberFormat('#,##0.00').format(val),
+                        style: textTheme.headlineLarge?.copyWith(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -1,
+                        ),
+                      );
+                    },
+                  )
+                : Text(
+                    '****',
+                    style: textTheme.headlineLarge?.copyWith(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Row(
+                children: [
+                  Text(
+                    'USD',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down,
+                      size: 22, color: Colors.white70),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ─────────────────── INVITE CARD ───────────────────
+  Widget _buildInviteCard(TextTheme textTheme) {
+    return ScaleButton(
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Referral program coming soon!')),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: AppColors.surfaceDark,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Invite friends',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Earn up to 40% commission!',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD0D3DC).withAlpha(60),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.monetization_on_rounded,
+                  size: 32, color: AppColors.brandRed),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────── CREDIT CARD ───────────────────
+  Widget _buildCreditCard(TextTheme textTheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Credit',
+                  style: textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600)),
+              const Spacer(),
+              const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'Limit Up to (USD)',
+              style: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Center(
+            child: Text(
+              '****',
+              style: textTheme.headlineLarge
+                  ?.copyWith(fontSize: 28, letterSpacing: 6),
+            ),
+          ),
+          const SizedBox(height: 18),
+          ScaleButton(
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Getting your credit limit...')),
+            ),
+            child: Container(
+              width: double.infinity,
+              height: 46,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                'Get Your Limit',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────── QUICK ACTIONS ───────────────────
+class _QuickActionsRow extends StatelessWidget {
+  const _QuickActionsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _QuickAction(label: 'Deposit', icon: Icons.add, isWhite: true),
+        _QuickAction(label: 'Buy Crypto', icon: Icons.bolt_outlined),
+        _QuickAction(label: 'Swap', icon: Icons.swap_horiz_rounded),
+        _QuickAction(label: 'More', icon: Icons.more_horiz),
+      ],
     );
   }
 }
@@ -151,119 +332,41 @@ class _QuickAction extends StatelessWidget {
   const _QuickAction({
     required this.label,
     required this.icon,
-    this.selected = false,
+    this.isWhite = false,
   });
 
   final String label;
   final IconData icon;
-  final bool selected;
+  final bool isWhite;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 74,
-          height: 74,
-          decoration: BoxDecoration(
-            color: selected ? const Color(0xFFF2F2F2) : const Color(0xFF242731),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, size: 34, color: selected ? Colors.black : Colors.white),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    );
-  }
-}
-
-class _InviteCard extends StatelessWidget {
-  const _InviteCard({required this.textTheme});
-
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(colors: [Color(0xFF272730), Color(0xFF343540)]),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Invite friends', style: textTheme.titleMedium?.copyWith(color: const Color(0xFF8D8E96))),
-                const SizedBox(height: 8),
-                Text('Earn up to 40% commission!', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
-              ],
-            ),
-          ),
-          Container(
-            width: 62,
-            height: 62,
-            decoration: const BoxDecoration(color: Color(0xFFC8CBD7), shape: BoxShape.circle),
-            child: const Icon(Icons.monetization_on, size: 35, color: Color(0xFFFA2E57)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CreditCardMock extends StatelessWidget {
-  const _CreditCardMock({required this.textTheme});
-
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1D1F26),
-        borderRadius: BorderRadius.circular(24),
+    return ScaleButton(
+      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$label feature coming soon!')),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text('Credit', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
-              const Spacer(),
-              const Icon(Icons.chevron_right, color: Color(0xFF8D8E96)),
-            ],
-          ),
-          const SizedBox(height: 30),
-          Center(
-            child: Text(
-              'Limit Up to (USD)',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF8D8E96),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Center(
-            child: Text('****', style: textTheme.headlineLarge?.copyWith(fontSize: 52)),
-          ),
-          const SizedBox(height: 24),
           Container(
-            width: double.infinity,
+            width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(30),
+              color: isWhite ? Colors.white : AppColors.cardDark,
+              shape: BoxShape.circle,
             ),
-            alignment: Alignment.center,
-            child: Text('Get Your Limit', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
+            child: Icon(
+              icon,
+              size: 26,
+              color: isWhite ? Colors.black : Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
           ),
         ],
       ),
@@ -271,9 +374,9 @@ class _CreditCardMock extends StatelessWidget {
   }
 }
 
-class _TransactionPreview extends ConsumerWidget {
-  const _TransactionPreview({required this.textTheme});
-
+// ─────────────────── TRANSACTIONS ───────────────────
+class _TransactionsSection extends ConsumerWidget {
+  const _TransactionsSection({required this.textTheme});
   final TextTheme textTheme;
 
   @override
@@ -282,70 +385,109 @@ class _TransactionPreview extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1D1F26),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text('Transactions', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
+              Text('Transactions',
+                  style:
+                      textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               const Spacer(),
-              const Icon(Icons.more_horiz, color: Color(0xFF8D8E96)),
+              const Icon(Icons.more_horiz, color: AppColors.textMuted, size: 20),
             ],
           ),
           const SizedBox(height: 14),
-          for (final tx in txs.take(2))
-            Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF20232D),
-                    ),
-                    child: const Center(
-                      child: Text('1', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFFFFC400))),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(tx.merchant, style: textTheme.titleMedium),
-                        const SizedBox(height: 2),
-                        Text(tx.maskedCard, style: textTheme.bodySmall),
-                        Text(tx.timestamp, style: textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${tx.amountUsd >= 0 ? '+' : ''}${tx.amountUsd.toStringAsFixed(2)} USD',
-                        style: textTheme.titleMedium,
-                      ),
-                      Text(
-                        tx.status,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: tx.status == 'Declined' ? const Color(0xFFFF7690) : Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          for (int i = 0; i < txs.length && i < 3; i++) ...[
+            _TransactionTile(tx: txs[i], textTheme: textTheme),
+            if (i < 2) const Divider(height: 20, color: AppColors.divider),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _TransactionTile extends StatelessWidget {
+  const _TransactionTile({required this.tx, required this.textTheme});
+  final dynamic tx;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Google "1" icon
+        Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Color(0xFF1A1D26),
+          ),
+          child: Center(
+            child: ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [
+                  Color(0xFF4285F4), // Blue
+                  Color(0xFFDB4437), // Red
+                  Color(0xFFF4B400), // Yellow
+                  Color(0xFF0F9D58), // Green
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ).createShader(bounds),
+              child: const Text(
+                '1',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(tx.merchant,
+                  style: textTheme.titleMedium?.copyWith(fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(tx.maskedCard,
+                  style: textTheme.bodySmall?.copyWith(fontSize: 11)),
+              Text(tx.timestamp,
+                  style: textTheme.bodySmall?.copyWith(fontSize: 11)),
+            ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${tx.amountUsd >= 0 ? '+' : ''}${tx.amountUsd.toStringAsFixed(2)} USD',
+              style: textTheme.titleMedium?.copyWith(fontSize: 13),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              tx.status,
+              style: textTheme.bodySmall?.copyWith(
+                color: tx.status == 'Declined'
+                    ? AppColors.declined
+                    : AppColors.green,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
