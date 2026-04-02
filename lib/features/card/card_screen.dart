@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../../core/models/transaction_item.dart';
 import '../../core/state/app_state_controller.dart';
 import '../../core/widgets/scale_button.dart';
 
@@ -144,23 +145,33 @@ class _CardScreenState extends ConsumerState<CardScreen>
 
           // Date header
           Text(
-            'Sun, Mar 29',
+            'Wed, Apr 02',
             style: textTheme.bodySmall
                 ?.copyWith(color: AppColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 10),
 
-          for (final tx in txs.take(2))
+          for (final tx in txs.take(3))
             _TxTile(tx: tx, textTheme: textTheme),
 
           const SizedBox(height: 14),
           Text(
-            'Sat, Mar 28',
+            'Tue, Apr 01',
             style: textTheme.bodySmall
                 ?.copyWith(color: AppColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 10),
-          for (final tx in txs.skip(2))
+          for (final tx in txs.skip(3).take(3))
+            _TxTile(tx: tx, textTheme: textTheme),
+
+          const SizedBox(height: 14),
+          Text(
+            'Sun, Mar 30',
+            style: textTheme.bodySmall
+                ?.copyWith(color: AppColors.textMuted, fontSize: 12),
+          ),
+          const SizedBox(height: 10),
+          for (final tx in txs.skip(6))
             _TxTile(tx: tx, textTheme: textTheme),
         ],
       ),
@@ -184,7 +195,6 @@ class _CardScreenState extends ConsumerState<CardScreen>
         children: [
           Row(
             children: [
-              // RedotPay logo
               Container(
                 width: 24,
                 height: 24,
@@ -207,7 +217,6 @@ class _CardScreenState extends ConsumerState<CardScreen>
                     fontWeight: FontWeight.w700,
                   )),
               const Spacer(),
-              // Visa hologram dot
               Container(
                 width: 28,
                 height: 28,
@@ -346,11 +355,22 @@ class _CardAction extends StatelessWidget {
 
 class _TxTile extends StatelessWidget {
   const _TxTile({required this.tx, required this.textTheme});
-  final dynamic tx;
+  final TransactionItem tx;
   final TextTheme textTheme;
+
+  static const Map<String, Color> _iconColors = {
+    'N': Color(0xFFE50914), // Netflix
+    'A': Color(0xFF555555), // Apple
+    'S': Color(0xFF1DB954), // Spotify
+    'a': Color(0xFFFF9900), // Amazon
+    'U': Color(0xFF06C167), // Uber
+    '₮': Color(0xFF26A17B), // Tether
+    'G': Color(0xFF4285F4), // Google
+  };
 
   @override
   Widget build(BuildContext context) {
+    final color = _iconColors[tx.icon] ?? const Color(0xFF8D8E96);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -358,29 +378,17 @@ class _TxTile extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF1A1D26),
+              color: color.withAlpha(40),
             ),
             child: Center(
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    Color(0xFF4285F4),
-                    Color(0xFFDB4437),
-                    Color(0xFFF4B400),
-                    Color(0xFF0F9D58),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: const Text(
-                  '1',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+              child: Text(
+                tx.icon,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: color,
                 ),
               ),
             ),

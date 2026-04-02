@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../../core/models/transaction_item.dart';
 import '../../core/state/app_state_controller.dart';
 import '../../core/widgets/scale_button.dart';
 import '../profile/profile_settings_screen.dart';
@@ -28,27 +29,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Header ───
             _buildHeader(context, textTheme),
             const SizedBox(height: 26),
-
-            // ─── Balance Section ───
             _buildBalanceSection(appState.totalBalance, textTheme),
             const SizedBox(height: 24),
-
-            // ─── Quick Actions ───
             const _QuickActionsRow(),
             const SizedBox(height: 24),
-
-            // ─── Invite Card ───
             _buildInviteCard(textTheme),
             const SizedBox(height: 16),
-
-            // ─── Credit Card ───
             _buildCreditCard(textTheme),
             const SizedBox(height: 16),
-
-            // ─── Transactions ───
             _TransactionsSection(textTheme: textTheme),
           ],
         ),
@@ -56,7 +46,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ─────────────────── HEADER ───────────────────
   Widget _buildHeader(BuildContext context, TextTheme textTheme) {
     return Row(
       children: [
@@ -64,10 +53,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const ProfileSettingsScreen()),
           ),
-          child: const CircleAvatar(
+          child: CircleAvatar(
             radius: 18,
-            backgroundColor: Color(0xFF2A2D36),
-            child: Icon(Icons.person, color: Colors.white54, size: 22),
+            backgroundColor: const Color(0xFF2A2D36),
+            child: Text(
+              'AF',
+              style: textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brandRed,
+              ),
+            ),
           ),
         ),
         const Spacer(),
@@ -115,7 +111,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ─────────────────── BALANCE ───────────────────
   Widget _buildBalanceSection(double balance, TextTheme textTheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       return Text(
                         NumberFormat('#,##0.00').format(val),
                         style: textTheme.headlineLarge?.copyWith(
-                          fontSize: 36,
+                          fontSize: 34,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -1,
                         ),
@@ -164,9 +159,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   )
                 : Text(
-                    '****',
+                    '••••••',
                     style: textTheme.headlineLarge?.copyWith(
-                      fontSize: 36,
+                      fontSize: 34,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -193,7 +188,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ─────────────────── INVITE CARD ───────────────────
   Widget _buildInviteCard(TextTheme textTheme) {
     return ScaleButton(
       onTap: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -246,7 +240,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ─────────────────── CREDIT CARD ───────────────────
   Widget _buildCreditCard(TextTheme textTheme) {
     return Container(
       width: double.infinity,
@@ -277,15 +270,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 6),
           Center(
             child: Text(
-              '****',
+              '50,000.00',
               style: textTheme.headlineLarge
-                  ?.copyWith(fontSize: 28, letterSpacing: 6),
+                  ?.copyWith(fontSize: 28, letterSpacing: 1),
             ),
           ),
           const SizedBox(height: 18),
           ScaleButton(
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Getting your credit limit...')),
+              const SnackBar(content: Text('Credit limit approved!')),
             ),
             child: Container(
               width: double.infinity,
@@ -296,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                'Get Your Limit',
+                'View Details',
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
@@ -310,7 +303,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ─────────────────── QUICK ACTIONS ───────────────────
 class _QuickActionsRow extends StatelessWidget {
   const _QuickActionsRow();
 
@@ -374,7 +366,6 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-// ─────────────────── TRANSACTIONS ───────────────────
 class _TransactionsSection extends ConsumerWidget {
   const _TransactionsSection({required this.textTheme});
   final TextTheme textTheme;
@@ -403,9 +394,9 @@ class _TransactionsSection extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 14),
-          for (int i = 0; i < txs.length && i < 3; i++) ...[
+          for (int i = 0; i < txs.length && i < 5; i++) ...[
             _TransactionTile(tx: txs[i], textTheme: textTheme),
-            if (i < 2) const Divider(height: 20, color: AppColors.divider),
+            if (i < 4) const Divider(height: 20, color: AppColors.divider),
           ],
         ],
       ),
@@ -415,40 +406,39 @@ class _TransactionsSection extends ConsumerWidget {
 
 class _TransactionTile extends StatelessWidget {
   const _TransactionTile({required this.tx, required this.textTheme});
-  final dynamic tx;
+  final TransactionItem tx;
   final TextTheme textTheme;
+
+  static const Map<String, Color> _iconColors = {
+    'N': Color(0xFFE50914),
+    'A': Color(0xFF555555),
+    'S': Color(0xFF1DB954),
+    'a': Color(0xFFFF9900),
+    'U': Color(0xFF06C167),
+    '₮': Color(0xFF26A17B),
+    'G': Color(0xFF4285F4),
+  };
 
   @override
   Widget build(BuildContext context) {
+    final color = _iconColors[tx.icon] ?? const Color(0xFF8D8E96);
+
     return Row(
       children: [
-        // Google "1" icon
         Container(
           width: 40,
           height: 40,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Color(0xFF1A1D26),
+            color: color.withAlpha(40),
           ),
           child: Center(
-            child: ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [
-                  Color(0xFF4285F4), // Blue
-                  Color(0xFFDB4437), // Red
-                  Color(0xFFF4B400), // Yellow
-                  Color(0xFF0F9D58), // Green
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: const Text(
-                '1',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+            child: Text(
+              tx.icon,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: color,
               ),
             ),
           ),
@@ -463,8 +453,6 @@ class _TransactionTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(tx.maskedCard,
                   style: textTheme.bodySmall?.copyWith(fontSize: 11)),
-              Text(tx.timestamp,
-                  style: textTheme.bodySmall?.copyWith(fontSize: 11)),
             ],
           ),
         ),
@@ -472,8 +460,11 @@ class _TransactionTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${tx.amountUsd >= 0 ? '+' : ''}${tx.amountUsd.toStringAsFixed(2)} USD',
-              style: textTheme.titleMedium?.copyWith(fontSize: 13),
+              '${tx.amountUsd >= 0 ? '+' : ''}${NumberFormat('#,##0.00').format(tx.amountUsd)} USD',
+              style: textTheme.titleMedium?.copyWith(
+                fontSize: 13,
+                color: tx.amountUsd >= 0 ? AppColors.green : Colors.white,
+              ),
             ),
             const SizedBox(height: 2),
             Text(

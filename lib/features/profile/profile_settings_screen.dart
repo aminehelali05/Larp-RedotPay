@@ -80,30 +80,43 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      const CircleAvatar(
-                        radius: 32,
-                        backgroundColor: Color(0xFF2A2D36),
-                        child: Icon(Icons.person,
-                            size: 38, color: Colors.white54),
+                      GestureDetector(
+                        onLongPress: () {
+                          _secretLongPressCount++;
+                          if (_secretLongPressCount >= 7) {
+                            _secretLongPressCount = 0;
+                            _openAdmin();
+                          } else {
+                            HapticFeedback.lightImpact();
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 32,
+                          backgroundColor: const Color(0xFF2A2D36),
+                          child: Text(
+                            'AF',
+                            style: textTheme.titleLarge?.copyWith(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.brandRed,
+                            ),
+                          ),
+                        ),
                       ),
                       Positioned(
                         bottom: 0,
-                        left: 0,
+                        right: 0,
                         child: Container(
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: AppColors.brandRed,
+                            color: AppColors.green,
                             shape: BoxShape.circle,
                             border: Border.all(
                                 color: Colors.black, width: 2),
                           ),
                           child: const Center(
-                            child: Text('⊕',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700)),
+                            child: Icon(Icons.check, size: 12, color: Colors.white),
                           ),
                         ),
                       ),
@@ -125,18 +138,26 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             }
                           },
                           child: Text(
-                            'ami****@gmail.com',
+                            'AmineFlex',
                             style: textTheme.titleLarge?.copyWith(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'ami****@flex.tn',
+                          style: textTheme.bodySmall?.copyWith(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
                             Text(
-                              'UID: 1107037434',
+                              'UID: RPX-987654',
                               style: textTheme.bodySmall
                                   ?.copyWith(fontSize: 13),
                             ),
@@ -144,7 +165,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             GestureDetector(
                               onTap: () {
                                 Clipboard.setData(const ClipboardData(
-                                    text: '1107037434'));
+                                    text: 'RPX-987654'));
                                 _showSnack('UID copied!');
                               },
                               child: const Icon(Icons.copy_rounded,
@@ -162,7 +183,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Approved',
+                            'Verified ✓',
                             style: textTheme.bodySmall?.copyWith(
                               color: AppColors.green,
                               fontWeight: FontWeight.w600,
@@ -244,11 +265,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _dot(AppColors.brandRed),
+                    _dot(AppColors.green),
                     const SizedBox(width: 3),
-                    _dot(AppColors.brandRed),
+                    _dot(AppColors.green),
                     const SizedBox(width: 3),
-                    _dot(AppColors.brandRed),
+                    _dot(AppColors.green),
                     const SizedBox(width: 8),
                     const Icon(Icons.chevron_right,
                         color: AppColors.textMuted, size: 20),
@@ -264,9 +285,38 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
               _menuDivider(),
               _menuItem(
+                icon: Icons.swap_horiz_rounded,
+                label: 'P2P Trading',
+                onTap: () => _showSnack('P2P Trading'),
+              ),
+              _menuDivider(),
+              _menuItem(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Community',
                 onTap: () => _showSnack('Community'),
+              ),
+              _menuDivider(),
+              _menuItem(
+                icon: Icons.card_giftcard_rounded,
+                label: 'Rewards',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandRed,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('NEW', style: textTheme.bodySmall?.copyWith(
+                        fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700)),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.chevron_right,
+                        color: AppColors.textMuted, size: 20),
+                  ],
+                ),
+                onTap: () => _showSnack('Rewards'),
               ),
               _menuDivider(),
               _menuItem(

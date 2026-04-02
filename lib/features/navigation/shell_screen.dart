@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../activity/activity_screen.dart';
 import '../assets/assets_screen.dart';
 import '../card/card_screen.dart';
 import '../home/home_screen.dart';
@@ -21,6 +22,7 @@ class _ShellScreenState extends State<ShellScreen> {
     CardScreen(),
     SendScreen(),
     AssetsScreen(),
+    ActivityScreen(),
   ];
 
   @override
@@ -54,12 +56,13 @@ class _BottomNav extends StatelessWidget {
     _NavDef(Icons.credit_card_rounded, 'Card'),
     _NavDef(Icons.arrow_forward_rounded, 'Send'),
     _NavDef(Icons.account_balance_wallet_rounded, 'Assets'),
+    _NavDef(Icons.receipt_long_rounded, 'Activity'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      minimum: const EdgeInsets.fromLTRB(10, 0, 10, 8),
       child: Container(
         height: 68,
         decoration: BoxDecoration(
@@ -106,7 +109,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.brandRed : Colors.white70;
+    final color = selected ? AppColors.brandRed : Colors.white54;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -114,7 +117,7 @@ class _NavItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF1B1D23) : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
@@ -127,7 +130,7 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: color,
               ),

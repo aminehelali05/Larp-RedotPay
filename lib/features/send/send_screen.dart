@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../../core/models/transaction_item.dart';
+import '../../core/state/app_state_controller.dart';
 import '../../core/widgets/scale_button.dart';
 
-class SendScreen extends StatelessWidget {
+class SendScreen extends ConsumerWidget {
   const SendScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final state = ref.watch(appStateProvider);
+    // Find USDT balance
+    final usdtAsset = state.assets.firstWhere(
+      (a) => a.symbol == 'USDT',
+    );
 
     return SafeArea(
       child: Padding(
@@ -53,9 +62,11 @@ class SendScreen extends StatelessWidget {
                   label: 'USDT',
                 ),
                 const Spacer(),
-                Text('Available 3 USDT',
-                    style: textTheme.bodySmall?.copyWith(
-                        fontSize: 12, color: AppColors.textMuted)),
+                Text(
+                  'Available ${NumberFormat('#,##0.00').format(usdtAsset.amount)} USDT',
+                  style: textTheme.bodySmall?.copyWith(
+                      fontSize: 12, color: AppColors.textMuted),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -84,7 +95,7 @@ class SendScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '944.87',
+              '998.50',
               style: textTheme.headlineLarge?.copyWith(
                 fontSize: 44,
                 color: const Color(0xFF3F4149),
@@ -98,27 +109,50 @@ class SendScreen extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                '1 USDT  =  0.9893 USD',
+                '1 USDT  =  0.9985 USD',
                 style: textTheme.bodySmall?.copyWith(fontSize: 13),
               ),
             ),
 
             const Spacer(),
 
+            // ─── Recent Contacts ───
+            Text('Recent', style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600, fontSize: 14)),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 70,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: const [
+                  _ContactBubble(name: 'Youssef', initials: 'YS'),
+                  SizedBox(width: 16),
+                  _ContactBubble(name: 'Sara', initials: 'SR'),
+                  SizedBox(width: 16),
+                  _ContactBubble(name: 'Omar', initials: 'OM'),
+                  SizedBox(width: 16),
+                  _ContactBubble(name: 'Lina', initials: 'LN'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // ─── Continue Button ───
             ScaleButton(
-              onTap: () => _snack(context, 'Insufficient balance'),
+              onTap: () => _snack(context, 'Processing transfer...'),
               child: Container(
                 width: double.infinity,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF20232D),
+                  color: AppColors.brandRed,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 alignment: Alignment.center,
                 child: Text('Continue',
                     style: textTheme.titleMedium?.copyWith(
-                        color: AppColors.textMuted, fontSize: 15)),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15)),
               ),
             ),
           ],
@@ -203,5 +237,34 @@ class SendScreen extends StatelessWidget {
   void _snack(BuildContext context, String msg) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(msg)));
+  }
+}
+
+class _ContactBubble extends StatelessWidget {
+  const _ContactBubble({required this.name, required this.initials});
+  final String name;
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundColor: AppColors.cardDark,
+          child: Text(initials,
+              style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
+        ),
+        const SizedBox(height: 6),
+        Text(name,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(fontSize: 11, color: Colors.white70)),
+      ],
+    );
   }
 }
